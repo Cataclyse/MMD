@@ -144,6 +144,36 @@ export class UI {
       mediaDuration.classList.add('hidden');
     }
 
+    const { tabVideo, tabAudio } = this.elements;
+    const hasAudio = (mediaData.formats?.audio && mediaData.formats.audio.length > 0);
+    const isPhoto = mediaData.meta?.type === 'photo' || !hasAudio;
+
+    if (isPhoto) {
+      tabAudio.classList.add('hidden');
+      tabVideo.textContent = 'Image (JPG / PNG)';
+      this.selectedMode = 'video';
+      tabVideo.classList.add('active');
+      tabAudio.classList.remove('active');
+    } else {
+      tabAudio.classList.remove('hidden');
+      tabVideo.textContent = 'Vidéo & audio (MP4)';
+      tabAudio.textContent = 'Audio seul (MP3 / M4A)';
+      if (this.selectedMode === 'video') {
+        tabVideo.classList.add('active');
+        tabAudio.classList.remove('active');
+      } else {
+        tabAudio.classList.add('active');
+        tabVideo.classList.remove('active');
+      }
+    }
+
+    const currentList = this.selectedMode === 'video'
+      ? (mediaData.formats?.video || [])
+      : (mediaData.formats?.audio || []);
+    if (!currentList.some((f) => f.id === this.selectedQuality) && currentList.length > 0) {
+      this.selectedQuality = currentList[0].id;
+    }
+
     inspectSection.classList.remove('hidden');
     inspectSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
@@ -194,11 +224,15 @@ export class UI {
     if (mode === 'video') {
       tabVideo.classList.add('active');
       tabAudio.classList.remove('active');
-      this.selectedQuality = '1080';
+      const videoList = this.availableFormats?.video || [];
+      const has1080 = videoList.some((v) => v.id === '1080');
+      this.selectedQuality = has1080 ? '1080' : (videoList[0]?.id || '1080');
     } else {
       tabAudio.classList.add('active');
       tabVideo.classList.remove('active');
-      this.selectedQuality = 'audio-mp3-320';
+      const audioList = this.availableFormats?.audio || [];
+      const has320 = audioList.some((a) => a.id === 'audio-mp3-320');
+      this.selectedQuality = has320 ? 'audio-mp3-320' : (audioList[0]?.id || 'audio-mp3-320');
     }
 
     this.renderAudioTrackChips();
@@ -212,8 +246,12 @@ export class UI {
     if (!this.availableFormats) return;
 
     const list = this.selectedMode === 'video' 
-      ? this.availableFormats.video 
-      : this.availableFormats.audio;
+      ? (this.availableFormats.video || [])
+      : (this.availableFormats.audio || []);
+
+    if (!list.some((item) => item.id === this.selectedQuality) && list.length > 0) {
+      this.selectedQuality = list[0].id;
+    }
 
     list.forEach((item) => {
       const chip = document.createElement('button');
@@ -238,7 +276,7 @@ export class UI {
       container.appendChild(chip);
     });
 
-    const activeItem = list.find(i => i.id === this.selectedQuality) || list[0];
+    const activeItem = list.find((i) => i.id === this.selectedQuality) || list[0];
     this.updateTelemetry(activeItem);
   }
 
@@ -249,13 +287,17 @@ export class UI {
       return;
     }
 
-    const currentTrack = (this.availableAudioTracks || []).find(t => t.id === this.selectedAudioTrackId) || this.availableAudioTracks?.[0];
+    const currentTrack = (this.availableAudioTracks || []).find((t) => t.id === this.selectedAudioTrackId) || this.availableAudioTracks?.[0];
     const trackLabel = currentTrack ? ` • Piste : ${currentTrack.displayName}` : '';
+    const container = (item.container || '').toUpperCase();
 
-    if (this.selectedMode === 'video') {
-      notice.textContent = `Format sélectionné : Conteneur MP4, résolution ${item.resolution || item.label}, codec H.264 / AAC${trackLabel}`;
+    if (['JPG', 'JPEG', 'PNG', 'WEBP', 'GIF'].includes(container)) {
+      notice.textContent = `Format sélectionné : Image ${container}, qualité originale sans perte`;
+    } else if (this.selectedMode === 'video') {
+      notice.textContent = `Format sélectionné : Conteneur ${container || 'MP4'}, résolution ${item.resolution || item.label}, codec H.264 / AAC${trackLabel}`;
     } else {
-      notice.textContent = `Format sélectionné : Fichier audio ${item.ext.toUpperCase()} (${item.quality || item.label})${trackLabel}`;
+      const audioExt = item.ext ? item.ext.toUpperCase() : 'MP3';
+      notice.textContent = `Format sélectionné : Fichier audio ${audioExt} (${item.quality || item.label})${trackLabel}`;
     }
   }
 

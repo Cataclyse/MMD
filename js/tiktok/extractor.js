@@ -125,6 +125,24 @@ export class TikTokExtractor {
       });
     }
 
+    if (Array.isArray(data.images) && data.images.length > 0) {
+      data.images.forEach((imgUrl, idx) => {
+        const ext = imgUrl.includes('.png') ? 'png' : 'jpg';
+        videoFormats.push({
+          id: `image-${idx + 1}`,
+          label: `Image ${idx + 1} (${ext.toUpperCase()})`,
+          resolution: 'Image HD',
+          container: ext.toUpperCase(),
+          ext,
+          badge: `Photo ${idx + 1}`,
+          isMuxed: false,
+          directStreamUrl: imgUrl,
+          fileSize: `${ext.toUpperCase()} HD`,
+          contentLength: 0,
+        });
+      });
+    }
+
     if (data.music) {
       audioFormats.push({
         id: 'audio-mp3',
@@ -142,15 +160,17 @@ export class TikTokExtractor {
       ? (data.author.unique_id ? `${data.author.nickname} (@${data.author.unique_id})` : data.author.nickname)
       : 'TikTok';
 
+    const isOnlyPhoto = Array.isArray(data.images) && data.images.length > 0 && !data.play && !data.hdplay;
+
     return {
       meta: {
         title: data.title || 'Vidéo TikTok',
         author: authorDisplay,
         authorUrl: data.author?.unique_id ? `https://www.tiktok.com/@${data.author.unique_id}` : null,
-        thumbnail: data.cover || '',
+        thumbnail: data.cover || (Array.isArray(data.images) ? data.images[0] : ''),
         fallbackThumbnail: data.origin_cover || data.cover || '',
         provider: 'TikTok',
-        type: 'video',
+        type: isOnlyPhoto ? 'photo' : 'video',
         id: data.id || 'tiktok',
         canonicalUrl: originalUrl,
       },

@@ -99,11 +99,13 @@ export class PinterestExtractor {
     }
 
     if (originalImage) {
+      const imgExt = originalImage.includes('.png') ? 'png' : 'jpg';
       videoFormats.push({
         id: 'image-orig',
-        label: 'Image originale HD (JPG/PNG)',
+        label: `Image originale HD (${imgExt.toUpperCase()})`,
         resolution: 'Image HD',
-        container: 'JPG',
+        container: imgExt.toUpperCase(),
+        ext: imgExt,
         badge: 'Originale',
         isMuxed: false,
         directStreamUrl: originalImage,

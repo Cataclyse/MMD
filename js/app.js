@@ -200,7 +200,24 @@ class MMDApp {
     const originalText = btn.innerHTML;
     btn.disabled = true;
 
+    const list = mode === 'audio'
+      ? (media.formats?.audio || [])
+      : (media.formats?.video || []);
+    const chosenFormat = list.find((f) => f.id === quality) || list[0];
+
     const getExt = () => {
+      if (chosenFormat?.ext) return chosenFormat.ext.toLowerCase();
+      if (chosenFormat?.container) {
+        const c = chosenFormat.container.toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'webp', 'mp3', 'm4a', 'opus', 'webm', 'mp4'].includes(c)) {
+          return c === 'jpeg' ? 'jpg' : c;
+        }
+      }
+      if (chosenFormat?.directStreamUrl) {
+        const cleanPath = chosenFormat.directStreamUrl.split('?')[0];
+        const match = cleanPath.match(/\.(jpg|jpeg|png|webp|gif|mp4|webm|mp3|m4a|opus)$/i);
+        if (match) return match[1].toLowerCase() === 'jpeg' ? 'jpg' : match[1].toLowerCase();
+      }
       if (mode === 'audio') {
         if (quality.includes('opus')) return 'opus';
         if (quality.includes('m4a')) return 'm4a';
@@ -209,9 +226,13 @@ class MMDApp {
       return 'mp4';
     };
 
-    const filename = `${this.slugify(media.meta.title)}_${quality}.${getExt()}`;
+    const ext = getExt();
+    const filename = `${this.slugify(media.meta.title)}_${quality}.${ext}`;
 
     if (this.settings.saveHistory) {
+      const formatType = ['jpg', 'png', 'webp', 'gif'].includes(ext)
+        ? 'Image'
+        : (mode === 'audio' ? 'Audio' : 'Vidéo');
       HistoryManager.addItem({
         id: media.meta.id,
         title: media.meta.title,
@@ -219,7 +240,7 @@ class MMDApp {
         thumbnail: media.meta.fallbackThumbnail || media.meta.thumbnail,
         canonicalUrl: media.meta.canonicalUrl,
         provider: media.meta.provider,
-        formatChosen: `${quality} ${mode === 'audio' ? 'Audio' : 'Vidéo'}`,
+        formatChosen: `${quality} ${formatType}`,
       });
     }
 

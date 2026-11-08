@@ -48,7 +48,7 @@ export class TwitterExtractor {
       } catch {}
     }
 
-    throw new Error('Aucune vidéo trouvée sur ce post X (Twitter) ou le contenu est privé.');
+    throw new Error('Aucun média trouvé sur ce post X (Twitter) ou le contenu est privé.');
   }
 
   static _parseVx(data, originalUrl, statusId) {
@@ -65,56 +65,86 @@ export class TwitterExtractor {
       }
     }
 
-    if (videoItems.length === 0) return null;
+    const imageItems = mediaList.filter((m) => m.type === 'image');
+    if (imageItems.length === 0 && Array.isArray(data.mediaURLs)) {
+      for (const u of data.mediaURLs) {
+        if (typeof u === 'string' && !u.includes('.mp4')) {
+          imageItems.push({ type: 'image', url: u });
+        }
+      }
+    }
 
-    const durationSec = Math.round((videoItems[0].duration_millis || videoItems[0].duration || 0) / 1000);
+    if (videoItems.length === 0 && imageItems.length === 0) return null;
+
+    const durationSec = videoItems.length > 0 
+      ? Math.round((videoItems[0].duration_millis || videoItems[0].duration || 0) / 1000) 
+      : 0;
     const videoFormats = [];
     const audioFormats = [];
 
-    videoItems.forEach((v, idx) => {
-      const h = v.size?.height || 720;
-      const resLabel = h >= 1080 ? '1080p Full HD' : (h >= 720 ? '720p HD' : `${h}p SD`);
-      const badge = h >= 1080 ? 'FHD' : (h >= 720 ? 'HD' : 'SD');
+    if (videoItems.length > 0) {
+      videoItems.forEach((v, idx) => {
+        const h = v.size?.height || 720;
+        const resLabel = h >= 1080 ? '1080p Full HD' : (h >= 720 ? '720p HD' : `${h}p SD`);
+        const badge = h >= 1080 ? 'FHD' : (h >= 720 ? 'HD' : 'SD');
 
-      videoFormats.push({
-        id: `mp4-${h}-${idx}`,
-        label: `Vidéo MP4 (${resLabel})`,
-        resolution: `${h}p`,
-        container: 'MP4',
-        badge,
-        isMuxed: true,
-        directStreamUrl: v.url,
-        fileSize: 'MP4 HD',
-        contentLength: 0,
-      });
-
-      if (idx === 0) {
-        audioFormats.push({
-          id: 'audio-mp3',
-          label: 'Piste audio originale (MP3)',
-          ext: 'mp3',
-          container: 'MP3',
-          badge: 'MP3',
-          quality: '320k',
+        videoFormats.push({
+          id: `mp4-${h}-${idx}`,
+          label: `Vidéo MP4 (${resLabel})`,
+          resolution: `${h}p`,
+          container: 'MP4',
+          badge,
+          isMuxed: true,
           directStreamUrl: v.url,
-          fileSize: durationSec > 0 ? '~' + ((durationSec * 192000) / (8 * 1024 * 1024)).toFixed(1) + ' MB' : 'Audio',
+          fileSize: 'MP4 HD',
+          contentLength: 0,
         });
-      }
-    });
+
+        if (idx === 0) {
+          audioFormats.push({
+            id: 'audio-mp3',
+            label: 'Piste audio originale (MP3)',
+            ext: 'mp3',
+            container: 'MP3',
+            badge: 'MP3',
+            quality: '320k',
+            directStreamUrl: v.url,
+            fileSize: durationSec > 0 ? '~' + ((durationSec * 192000) / (8 * 1024 * 1024)).toFixed(1) + ' MB' : 'Audio',
+          });
+        }
+      });
+    } else {
+      imageItems.forEach((img, idx) => {
+        const ext = (img.url && img.url.includes('.png')) ? 'png' : 'jpg';
+        videoFormats.push({
+          id: `image-${idx + 1}`,
+          label: `Image ${idx + 1} (${ext.toUpperCase()})`,
+          resolution: 'Image HD',
+          container: ext.toUpperCase(),
+          ext,
+          badge: `Photo ${idx + 1}`,
+          isMuxed: false,
+          directStreamUrl: img.url,
+          fileSize: `${ext.toUpperCase()} HD`,
+          contentLength: 0,
+        });
+      });
+    }
 
     const authorName = data.user_name || 'X User';
     const authorHandle = data.user_screen_name ? `@${data.user_screen_name}` : '';
     const authorDisplay = authorHandle ? `${authorName} (${authorHandle})` : authorName;
+    const thumb = videoItems[0]?.thumbnail_url || imageItems[0]?.url || data.user_profile_image_url || '';
 
     return {
       meta: {
         title: data.text || 'Post X (Twitter)',
         author: authorDisplay,
         authorUrl: data.user_screen_name ? `https://x.com/${data.user_screen_name}` : null,
-        thumbnail: videoItems[0].thumbnail_url || data.user_profile_image_url || '',
+        thumbnail: thumb,
         fallbackThumbnail: data.user_profile_image_url || '',
         provider: 'X (Twitter)',
-        type: 'video',
+        type: videoItems.length > 0 ? 'video' : 'photo',
         id: statusId,
         canonicalUrl: originalUrl,
       },
@@ -134,76 +164,97 @@ export class TwitterExtractor {
     if (!data || data.code !== 200 || !data.tweet) return null;
     const tweet = data.tweet;
     const videos = tweet.media?.videos || [];
-    if (videos.length === 0) return null;
+    const photos = tweet.media?.photos || [];
+    if (videos.length === 0 && photos.length === 0) return null;
 
-    const v0 = videos[0];
-    const durationSec = Math.round(v0.duration || 0);
     const videoFormats = [];
     const audioFormats = [];
+    let durationSec = 0;
 
-    const variants = (v0.variants || []).filter((v) => (v.content_type || '').includes('mp4') || (v.url || '').includes('.mp4'));
-    if (variants.length > 0) {
-      variants.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
-      variants.forEach((v, idx) => {
-        const br = v.bitrate || 0;
-        let badge = 'HD';
-        let resLabel = '720p HD';
-        if (br > 1500000) { badge = 'FHD'; resLabel = '1080p Full HD'; }
-        else if (br < 500000) { badge = 'SD'; resLabel = '480p SD'; }
+    if (videos.length > 0) {
+      const v0 = videos[0];
+      durationSec = Math.round(v0.duration || 0);
+      const variants = (v0.variants || []).filter((v) => (v.content_type || '').includes('mp4') || (v.url || '').includes('.mp4'));
+      if (variants.length > 0) {
+        variants.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+        variants.forEach((v, idx) => {
+          const br = v.bitrate || 0;
+          let badge = 'HD';
+          let resLabel = '720p HD';
+          if (br > 1500000) { badge = 'FHD'; resLabel = '1080p Full HD'; }
+          else if (br < 500000) { badge = 'SD'; resLabel = '480p SD'; }
 
+          videoFormats.push({
+            id: `mp4-${idx}`,
+            label: `Vidéo MP4 (${resLabel})`,
+            resolution: badge === 'FHD' ? '1080p' : '720p',
+            container: 'MP4',
+            badge,
+            isMuxed: true,
+            directStreamUrl: v.url,
+            fileSize: 'MP4 HD',
+            contentLength: 0,
+          });
+        });
+      } else if (v0.url) {
         videoFormats.push({
-          id: `mp4-${idx}`,
-          label: `Vidéo MP4 (${resLabel})`,
-          resolution: badge === 'FHD' ? '1080p' : '720p',
+          id: 'mp4-direct',
+          label: 'Vidéo MP4 (Originale)',
+          resolution: '720p',
           container: 'MP4',
-          badge,
+          badge: 'MP4',
           isMuxed: true,
-          directStreamUrl: v.url,
+          directStreamUrl: v0.url,
           fileSize: 'MP4 HD',
           contentLength: 0,
         });
-      });
-    } else if (v0.url) {
-      videoFormats.push({
-        id: 'mp4-direct',
-        label: 'Vidéo MP4 (Originale)',
-        resolution: '720p',
-        container: 'MP4',
-        badge: 'MP4',
-        isMuxed: true,
-        directStreamUrl: v0.url,
-        fileSize: 'MP4 HD',
-        contentLength: 0,
-      });
-    }
+      }
 
-    const streamUrl = videoFormats[0]?.directStreamUrl;
-    if (streamUrl) {
-      audioFormats.push({
-        id: 'audio-mp3',
-        label: 'Piste audio originale (MP3)',
-        ext: 'mp3',
-        container: 'MP3',
-        badge: 'MP3',
-        quality: '320k',
-        directStreamUrl: streamUrl,
-        fileSize: durationSec > 0 ? '~' + ((durationSec * 192000) / (8 * 1024 * 1024)).toFixed(1) + ' MB' : 'Audio',
+      const streamUrl = videoFormats[0]?.directStreamUrl;
+      if (streamUrl) {
+        audioFormats.push({
+          id: 'audio-mp3',
+          label: 'Piste audio originale (MP3)',
+          ext: 'mp3',
+          container: 'MP3',
+          badge: 'MP3',
+          quality: '320k',
+          directStreamUrl: streamUrl,
+          fileSize: durationSec > 0 ? '~' + ((durationSec * 192000) / (8 * 1024 * 1024)).toFixed(1) + ' MB' : 'Audio',
+        });
+      }
+    } else {
+      photos.forEach((p, idx) => {
+        const ext = (p.url && p.url.includes('.png')) ? 'png' : 'jpg';
+        videoFormats.push({
+          id: `image-${idx + 1}`,
+          label: `Image ${idx + 1} (${ext.toUpperCase()})`,
+          resolution: 'Image HD',
+          container: ext.toUpperCase(),
+          ext,
+          badge: `Photo ${idx + 1}`,
+          isMuxed: false,
+          directStreamUrl: p.url,
+          fileSize: `${ext.toUpperCase()} HD`,
+          contentLength: 0,
+        });
       });
     }
 
     const authorName = tweet.author?.name || 'X User';
     const authorHandle = tweet.author?.screen_name ? `@${tweet.author.screen_name}` : '';
     const authorDisplay = authorHandle ? `${authorName} (${authorHandle})` : authorName;
+    const thumb = videos[0]?.thumbnail_url || photos[0]?.url || tweet.author?.avatar_url || '';
 
     return {
       meta: {
         title: tweet.text || 'Post X (Twitter)',
         author: authorDisplay,
         authorUrl: tweet.author?.screen_name ? `https://x.com/${tweet.author.screen_name}` : null,
-        thumbnail: v0.thumbnail_url || tweet.author?.avatar_url || '',
+        thumbnail: thumb,
         fallbackThumbnail: tweet.author?.avatar_url || '',
         provider: 'X (Twitter)',
-        type: 'video',
+        type: videos.length > 0 ? 'video' : 'photo',
         id: statusId,
         canonicalUrl: originalUrl,
       },

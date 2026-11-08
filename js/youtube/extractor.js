@@ -14,8 +14,8 @@ export class YouTubeExtractorEngine {
   static async extract(videoId) {
     this._session = `s_${videoId}_${Date.now().toString(36)}`;
     const clientsToTry = [
-      { name: 'visionos',   builder: buildVisionOsPayload,   clientNameHeader: '101', clientVerHeader: '1.02',    ua: VISIONOS_UA },
-      { name: 'android_vr', builder: buildAndroidVrPayload, clientNameHeader: '28',  clientVerHeader: '1.65.10', ua: ANDROID_VR_UA },
+      { name: 'visionos',   builder: buildVisionOsPayload,   clientNameHeader: '85', clientVerHeader: '1.02',    ua: VISIONOS_UA },
+      { name: 'android_vr', builder: buildAndroidVrPayload, clientNameHeader: '28', clientVerHeader: '1.65.10', ua: ANDROID_VR_UA },
     ];
 
     let lastError = null;
@@ -32,7 +32,51 @@ export class YouTubeExtractorEngine {
       }
     }
 
+    try {
+      const invResult = await this._fetchInvidious(videoId);
+      if (invResult?.hasDirectStreams) {
+        return invResult;
+      }
+    } catch {}
+
     return this._buildFallbackFormats(videoId);
+  }
+
+  static async _fetchInvidious(videoId) {
+    const urls = [
+      `https://yt.chocolatemoo53.com/api/v1/videos/${videoId}`,
+      buildProxyUrl(`https://yt.chocolatemoo53.com/api/v1/videos/${videoId}`),
+    ];
+    for (const u of urls) {
+      try {
+        const res = await fetch(u, { signal: AbortSignal.timeout(6000) });
+        if (!res.ok) continue;
+        const data = await res.json();
+        const raw = {
+          streamingData: {
+            formats: data.formatStreams || [],
+            adaptiveFormats: (data.adaptiveFormats || []).map((f) => ({
+              itag: parseInt(f.itag, 10),
+              url: f.url,
+              mimeType: f.type,
+              bitrate: f.bitrate || 0,
+              averageBitrate: f.bitrate || 0,
+              contentLength: f.clen,
+              height: f.resolution ? parseInt(f.resolution, 10) : undefined,
+              fps: f.fps,
+            })),
+          },
+          videoDetails: {
+            title: data.title,
+            author: data.author,
+            lengthSeconds: data.lengthSeconds,
+          },
+        };
+        const result = this._parseResponse(raw, videoId, 'invidious');
+        if (result?.hasDirectStreams) return result;
+      } catch {}
+    }
+    return null;
   }
 
   static async _getVisitorData(videoId) {

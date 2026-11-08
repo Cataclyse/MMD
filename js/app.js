@@ -88,7 +88,7 @@ class MMDApp {
           elements.urlInput.value = text.trim();
           elements.urlInput.dispatchEvent(new Event('input'));
           this.ui.showToast(i18n.t('toast.clipboard_pasted'), 'info');
-          if (MediaParser.isYouTubeUrl(text)) {
+          if (MediaParser.isSupportedUrl(text)) {
             elements.urlForm.dispatchEvent(new Event('submit'));
           }
         }
@@ -151,7 +151,7 @@ class MMDApp {
       try {
         if (navigator.clipboard && navigator.clipboard.readText) {
           const text = await navigator.clipboard.readText();
-          if (text && MediaParser.isYouTubeUrl(text) && !this.ui.elements.urlInput.value) {
+          if (text && MediaParser.isSupportedUrl(text) && !this.ui.elements.urlInput.value) {
             this.ui.elements.urlInput.value = text.trim();
             this.ui.elements.urlInput.dispatchEvent(new Event('input'));
             this.ui.showToast(i18n.t('toast.clipboard_detected'), 'info');

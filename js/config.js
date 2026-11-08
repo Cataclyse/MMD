@@ -48,8 +48,20 @@ export const CONFIG = {
       color: '#00F2FE',
       badgeClass: 'badge-tiktok',
       icon: '♪',
-      enabled: false,
-      patterns: [/^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/i],
+      enabled: true,
+      patterns: [
+        /^(?:https?:\/\/)?(?:www\.|m\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/i,
+        /^(?:https?:\/\/)?(?:www\.|m\.)?tiktok\.com\/@[\w.-]+\/photo\/\d+/i,
+        /^(?:https?:\/\/)?(?:vm|vt)\.tiktok\.com\/[\w.-]+/i,
+        /^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/t\/[\w.-]+/i,
+        /^(?:https?:\/\/)?(?:www\.|m\.)?tiktok\.com\/share\/video\/\d+/i,
+        /^(?:https?:\/\/)?(?:www\.|m\.)?tiktok\.com\/v\/\d+/i,
+      ],
+      extractId: (url) => {
+        const m = url.match(/\/(?:video|photo)\/(\d+)/i) || url.match(/(?:vm|vt)\.tiktok\.com\/([\w.-]+)/i) || url.match(/\/t\/([\w.-]+)/i);
+        return m ? m[1] : null;
+      },
+      oEmbedUrl: (url) => `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`,
     },
     soundcloud: {
       id: 'soundcloud',

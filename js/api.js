@@ -1,8 +1,41 @@
 import { CONFIG } from './config.js';
 import { YouTubeExtractor } from './youtube/index.js';
+import { TikTokExtractor } from './tiktok/extractor.js';
 
 export class MediaAPI {
   static async fetchQuickMetadata(parsed) {
+    if (parsed.providerKey === 'tiktok') {
+      try {
+        const oEmbedUrl = CONFIG.PROVIDERS.tiktok.oEmbedUrl(parsed.cleanUrl);
+        const res = await fetch(oEmbedUrl);
+        if (res.ok) {
+          const data = await res.json();
+          return {
+            title: data.title || 'Vidéo TikTok',
+            author: data.author_name || 'TikTok',
+            authorUrl: data.author_url || null,
+            thumbnail: data.thumbnail_url || '',
+            fallbackThumbnail: data.thumbnail_url || '',
+            provider: 'TikTok',
+            type: 'video',
+            id: parsed.mediaId || 'tiktok',
+            canonicalUrl: parsed.cleanUrl,
+          };
+        }
+      } catch {}
+      return {
+        title: 'Vidéo TikTok',
+        author: 'TikTok',
+        authorUrl: null,
+        thumbnail: '',
+        fallbackThumbnail: '',
+        provider: 'TikTok',
+        type: 'video',
+        id: parsed.mediaId || 'tiktok',
+        canonicalUrl: parsed.cleanUrl,
+      };
+    }
+
     if (parsed.providerKey !== 'youtube') {
       throw new Error('Fournisseur non supporté actuellement.');
     }
@@ -44,6 +77,10 @@ export class MediaAPI {
   }
 
   static async inspectMedia(parsed) {
+    if (parsed.providerKey === 'tiktok') {
+      return await TikTokExtractor.extract(parsed.cleanUrl);
+    }
+
     const [meta, extraction] = await Promise.all([
       this.fetchQuickMetadata(parsed),
       YouTubeExtractor.extract(parsed.mediaId),
@@ -153,6 +190,17 @@ export class MediaAPI {
 
   static async resolveAndDownload(videoId, mode, quality, mediaObj, filename, onProgress, onStatus, selectedTrackId = null) {
     let currentMedia = mediaObj;
+
+    if (currentMedia?.meta?.provider === 'TikTok') {
+      const list = mode === 'audio'
+        ? (currentMedia.formats?.audio || [])
+        : (currentMedia.formats?.video || []);
+      const chosen = list.find((f) => f.id === quality) || list[0];
+      const streamUrl = chosen?.directStreamUrl || chosen?.url;
+      if (!streamUrl) throw new Error('Flux TikTok direct introuvable.');
+      await TikTokExtractor.download(streamUrl, filename, onProgress, onStatus);
+      return;
+    }
 
     const hasAnyDirect = (
       currentMedia?.formats?.video?.some((v) => v.directStreamUrl || v.url) ||

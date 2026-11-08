@@ -30,13 +30,18 @@ export class MediaParser {
 
     return {
       valid: false,
-      error: "Ce format d'URL n'est pas encore pris en charge. Pour l'instant, collez un lien YouTube valide (ex: youtube.com/watch?v=... ou youtu.be/...)."
+      error: "Ce format d'URL n'est pas encore pris en charge. Collez un lien YouTube ou TikTok valide."
     };
   }
 
   static isYouTubeUrl(text) {
     if (!text) return false;
     return /(?:youtube\.com|youtu\.be)/i.test(text);
+  }
+
+  static isSupportedUrl(text) {
+    if (!text || typeof text !== 'string') return false;
+    return /(?:youtube\.com|youtu\.be|tiktok\.com)/i.test(text.trim());
   }
 
   static formatDuration(totalSeconds) {

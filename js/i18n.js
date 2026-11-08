@@ -42,7 +42,7 @@ const FALLBACK_TRANSLATIONS = {
     "toast.url_invalid": "URL invalide ou non supportée",
     "toast.resolved": "Flux résolu et prêt au téléchargement",
     "toast.download_started": "Téléchargement démarré avec succès",
-    "toast.clipboard_detected": "Lien YouTube détecté dans le presse-papier",
+    "toast.clipboard_detected": "Lien détecté dans le presse-papier",
     "toast.clipboard_pasted": "Lien collé depuis le presse-papier",
     "toast.history_cleared": "Historique effacé",
     "toast.settings_saved": "Préférences enregistrées avec succès"

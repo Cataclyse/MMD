@@ -2,9 +2,44 @@ import { CONFIG } from './config.js';
 import { YouTubeExtractor } from './youtube/index.js';
 import { TikTokExtractor } from './tiktok/extractor.js';
 import { TwitterExtractor } from './twitter/extractor.js';
+import { PinterestExtractor } from './pinterest/extractor.js';
 
 export class MediaAPI {
   static async fetchQuickMetadata(parsed) {
+    if (parsed.providerKey === 'pinterest') {
+      try {
+        const oEmbedUrl = CONFIG.PROVIDERS.pinterest.oEmbedUrl(parsed.cleanUrl);
+        const res = await fetch(oEmbedUrl);
+        if (res.ok) {
+          const data = await res.json();
+          const baseThumb = data.thumbnail_url || '';
+          const origThumb = baseThumb ? baseThumb.replace(/\/\d+x\//, '/originals/') : '';
+          return {
+            title: data.title?.trim() || 'Épingle Pinterest',
+            author: data.author_name || 'Pinterest',
+            authorUrl: data.author_url || null,
+            thumbnail: baseThumb || origThumb,
+            fallbackThumbnail: origThumb || baseThumb,
+            provider: 'Pinterest',
+            type: 'video',
+            id: parsed.mediaId || 'pinterest',
+            canonicalUrl: parsed.cleanUrl,
+          };
+        }
+      } catch {}
+      return {
+        title: 'Épingle Pinterest',
+        author: 'Pinterest',
+        authorUrl: null,
+        thumbnail: '',
+        fallbackThumbnail: '',
+        provider: 'Pinterest',
+        type: 'video',
+        id: parsed.mediaId || 'pinterest',
+        canonicalUrl: parsed.cleanUrl,
+      };
+    }
+
     if (parsed.providerKey === 'twitter') {
       try {
         const oEmbedUrl = CONFIG.PROVIDERS.twitter.oEmbedUrl(parsed.cleanUrl);
@@ -110,6 +145,10 @@ export class MediaAPI {
   }
 
   static async inspectMedia(parsed) {
+    if (parsed.providerKey === 'pinterest') {
+      return await PinterestExtractor.extract(parsed.cleanUrl);
+    }
+
     if (parsed.providerKey === 'twitter') {
       return await TwitterExtractor.extract(parsed.cleanUrl, parsed.mediaId);
     }
@@ -227,6 +266,17 @@ export class MediaAPI {
 
   static async resolveAndDownload(videoId, mode, quality, mediaObj, filename, onProgress, onStatus, selectedTrackId = null) {
     let currentMedia = mediaObj;
+
+    if (currentMedia?.meta?.provider === 'Pinterest') {
+      const list = mode === 'audio'
+        ? (currentMedia.formats?.audio || [])
+        : (currentMedia.formats?.video || []);
+      const chosen = list.find((f) => f.id === quality) || list[0];
+      const streamUrl = chosen?.directStreamUrl || chosen?.url;
+      if (!streamUrl) throw new Error('Flux Pinterest direct introuvable.');
+      await PinterestExtractor.download(streamUrl, filename, onProgress, onStatus);
+      return;
+    }
 
     if (currentMedia?.meta?.provider === 'X (Twitter)') {
       const list = mode === 'audio'

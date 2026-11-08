@@ -83,6 +83,24 @@ export const CONFIG = {
       },
       oEmbedUrl: (url) => `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`,
     },
+    pinterest: {
+      id: 'pinterest',
+      name: 'Pinterest',
+      shortName: 'PIN',
+      color: '#E60023',
+      badgeClass: 'badge-pinterest',
+      icon: '📌',
+      enabled: true,
+      patterns: [
+        /^(?:https?:\/\/)?(?:[a-z]{2,3}\.)?pinterest\.[a-z.]+\/pin\/\d+/i,
+        /^(?:https?:\/\/)?pin\.it\/[a-zA-Z0-9_-]+/i,
+      ],
+      extractId: (url) => {
+        const m = url.match(/pin\/(\d+)/i) || url.match(/pin\.it\/([a-zA-Z0-9_-]+)/i);
+        return m ? m[1] : null;
+      },
+      oEmbedUrl: (url) => `https://www.pinterest.com/oembed.json?url=${encodeURIComponent(url)}`,
+    },
     soundcloud: {
       id: 'soundcloud',
       name: 'SoundCloud',

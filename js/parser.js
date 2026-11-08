@@ -30,7 +30,7 @@ export class MediaParser {
 
     return {
       valid: false,
-      error: "Ce format d'URL n'est pas encore pris en charge. Collez un lien YouTube ou TikTok valide."
+      error: "Ce format d'URL n'est pas encore pris en charge. Collez un lien YouTube, TikTok ou X (Twitter) valide."
     };
   }
 
@@ -41,7 +41,7 @@ export class MediaParser {
 
   static isSupportedUrl(text) {
     if (!text || typeof text !== 'string') return false;
-    return /(?:youtube\.com|youtu\.be|tiktok\.com)/i.test(text.trim());
+    return /(?:youtube\.com|youtu\.be|tiktok\.com|twitter\.com|x\.com)/i.test(text.trim());
   }
 
   static formatDuration(totalSeconds) {

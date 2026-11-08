@@ -63,6 +63,26 @@ export const CONFIG = {
       },
       oEmbedUrl: (url) => `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`,
     },
+    twitter: {
+      id: 'twitter',
+      name: 'X (Twitter)',
+      shortName: 'X',
+      color: '#E7E9EA',
+      badgeClass: 'badge-twitter',
+      icon: '𝕏',
+      enabled: true,
+      patterns: [
+        /^(?:https?:\/\/)?(?:www\.|mobile\.)?(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/i,
+        /^(?:https?:\/\/)?(?:www\.|mobile\.)?(?:twitter\.com|x\.com)\/i\/status(?:es)?\/(\d+)/i,
+        /^(?:https?:\/\/)?(?:www\.|mobile\.)?(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status\/(\d+)\/video\/\d+/i,
+        /^(?:https?:\/\/)?(?:t\.co)\/[\w-]+/i,
+      ],
+      extractId: (url) => {
+        const m = url.match(/status(?:es)?\/(\d+)/i);
+        return m ? m[1] : null;
+      },
+      oEmbedUrl: (url) => `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`,
+    },
     soundcloud: {
       id: 'soundcloud',
       name: 'SoundCloud',

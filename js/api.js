@@ -1,9 +1,42 @@
 import { CONFIG } from './config.js';
 import { YouTubeExtractor } from './youtube/index.js';
 import { TikTokExtractor } from './tiktok/extractor.js';
+import { TwitterExtractor } from './twitter/extractor.js';
 
 export class MediaAPI {
   static async fetchQuickMetadata(parsed) {
+    if (parsed.providerKey === 'twitter') {
+      try {
+        const oEmbedUrl = CONFIG.PROVIDERS.twitter.oEmbedUrl(parsed.cleanUrl);
+        const res = await fetch(oEmbedUrl);
+        if (res.ok) {
+          const data = await res.json();
+          return {
+            title: data.html ? data.html.replace(/<[^>]+>/g, ' ').slice(0, 100) : 'Post X (Twitter)',
+            author: data.author_name || 'X User',
+            authorUrl: data.author_url || null,
+            thumbnail: '',
+            fallbackThumbnail: '',
+            provider: 'X (Twitter)',
+            type: 'video',
+            id: parsed.mediaId || 'twitter',
+            canonicalUrl: parsed.cleanUrl,
+          };
+        }
+      } catch {}
+      return {
+        title: 'Post X (Twitter)',
+        author: 'X User',
+        authorUrl: null,
+        thumbnail: '',
+        fallbackThumbnail: '',
+        provider: 'X (Twitter)',
+        type: 'video',
+        id: parsed.mediaId || 'twitter',
+        canonicalUrl: parsed.cleanUrl,
+      };
+    }
+
     if (parsed.providerKey === 'tiktok') {
       try {
         const oEmbedUrl = CONFIG.PROVIDERS.tiktok.oEmbedUrl(parsed.cleanUrl);
@@ -77,6 +110,10 @@ export class MediaAPI {
   }
 
   static async inspectMedia(parsed) {
+    if (parsed.providerKey === 'twitter') {
+      return await TwitterExtractor.extract(parsed.cleanUrl, parsed.mediaId);
+    }
+
     if (parsed.providerKey === 'tiktok') {
       return await TikTokExtractor.extract(parsed.cleanUrl);
     }
@@ -190,6 +227,17 @@ export class MediaAPI {
 
   static async resolveAndDownload(videoId, mode, quality, mediaObj, filename, onProgress, onStatus, selectedTrackId = null) {
     let currentMedia = mediaObj;
+
+    if (currentMedia?.meta?.provider === 'X (Twitter)') {
+      const list = mode === 'audio'
+        ? (currentMedia.formats?.audio || [])
+        : (currentMedia.formats?.video || []);
+      const chosen = list.find((f) => f.id === quality) || list[0];
+      const streamUrl = chosen?.directStreamUrl || chosen?.url;
+      if (!streamUrl) throw new Error('Flux X (Twitter) direct introuvable.');
+      await TwitterExtractor.download(streamUrl, filename, onProgress, onStatus);
+      return;
+    }
 
     if (currentMedia?.meta?.provider === 'TikTok') {
       const list = mode === 'audio'

@@ -97,6 +97,22 @@ class MMDApp {
       }
     });
 
+    document.querySelectorAll('.platform-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        elements.urlInput.focus();
+        const p = card.getAttribute('data-provider');
+        const hints = {
+          youtube: 'https://www.youtube.com/watch?v=...',
+          tiktok: 'https://www.tiktok.com/@user/video/...',
+          twitter: 'https://x.com/user/status/...',
+          pinterest: 'https://www.pinterest.com/pin/...',
+        };
+        if (hints[p] && !elements.urlInput.value) {
+          elements.urlInput.placeholder = hints[p];
+        }
+      });
+    });
+
     elements.urlForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       await this.handleAnalyze();

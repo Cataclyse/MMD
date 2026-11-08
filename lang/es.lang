@@ -41,8 +41,10 @@
   "toast.url_invalid": "URL no válida o no admitida",
   "toast.resolved": "Flujo resuelto y listo para descargar",
   "toast.download_started": "Descarga iniciada con éxito",
-  "toast.clipboard_detected": "Enlace de YouTube detectado en el portapapeles",
+  "toast.clipboard_detected": "Enlace detectado en el portapapeles",
   "toast.clipboard_pasted": "Enlace pegado desde el portapapeles",
   "toast.history_cleared": "Historial borrado",
-  "toast.settings_saved": "Preferencias guardadas con éxito"
+  "toast.settings_saved": "Preferencias guardadas con éxito",
+  "platforms.title": "Plataformas compatibles",
+  "platforms.subtitle": "Extracción directa HD • Sin marcas de agua"
 }

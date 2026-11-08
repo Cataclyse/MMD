@@ -41,8 +41,10 @@
   "toast.url_invalid": "Invalid or unsupported URL",
   "toast.resolved": "Stream resolved and ready for download",
   "toast.download_started": "Download started successfully",
-  "toast.clipboard_detected": "YouTube link detected in clipboard",
+  "toast.clipboard_detected": "Link detected in clipboard",
   "toast.clipboard_pasted": "Link pasted from clipboard",
   "toast.history_cleared": "History cleared",
-  "toast.settings_saved": "Preferences saved successfully"
+  "toast.settings_saved": "Preferences saved successfully",
+  "platforms.title": "Supported platforms",
+  "platforms.subtitle": "Direct HD extraction • Watermark-free"
 }

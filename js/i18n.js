@@ -45,7 +45,9 @@ const FALLBACK_TRANSLATIONS = {
     "toast.clipboard_detected": "Lien détecté dans le presse-papier",
     "toast.clipboard_pasted": "Lien collé depuis le presse-papier",
     "toast.history_cleared": "Historique effacé",
-    "toast.settings_saved": "Préférences enregistrées avec succès"
+    "toast.settings_saved": "Préférences enregistrées avec succès",
+    "platforms.title": "Plateformes compatibles",
+    "platforms.subtitle": "Extraction directe HD • Sans filigrane"
   }
 };
 

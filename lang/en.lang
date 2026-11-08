@@ -42,6 +42,7 @@
   "toast.resolved": "Stream resolved and ready for download",
   "toast.download_started": "Download started successfully",
   "toast.clipboard_detected": "Link detected in clipboard",
+  "toast.clipboard_detected_provider": "{provider} link detected in clipboard",
   "toast.clipboard_pasted": "Link pasted from clipboard",
   "toast.history_cleared": "History cleared",
   "toast.settings_saved": "Preferences saved successfully",

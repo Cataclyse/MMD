@@ -42,6 +42,7 @@
   "toast.resolved": "Flujo resuelto y listo para descargar",
   "toast.download_started": "Descarga iniciada con éxito",
   "toast.clipboard_detected": "Enlace detectado en el portapapeles",
+  "toast.clipboard_detected_provider": "Enlace de {provider} detectado en el portapapeles",
   "toast.clipboard_pasted": "Enlace pegado desde el portapapeles",
   "toast.history_cleared": "Historial borrado",
   "toast.settings_saved": "Preferencias guardadas con éxito",

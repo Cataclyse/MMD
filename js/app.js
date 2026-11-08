@@ -168,9 +168,14 @@ class MMDApp {
         if (navigator.clipboard && navigator.clipboard.readText) {
           const text = await navigator.clipboard.readText();
           if (text && MediaParser.isSupportedUrl(text) && !this.ui.elements.urlInput.value) {
+            const parsed = MediaParser.parse(text);
             this.ui.elements.urlInput.value = text.trim();
             this.ui.elements.urlInput.dispatchEvent(new Event('input'));
-            this.ui.showToast(i18n.t('toast.clipboard_detected'), 'info');
+            const provName = parsed?.providerName || '';
+            const msg = provName
+              ? i18n.t('toast.clipboard_detected_provider', { provider: provName })
+              : i18n.t('toast.clipboard_detected');
+            this.ui.showToast(msg, 'info');
           }
         }
       } catch (e) {}

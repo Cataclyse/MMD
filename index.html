@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MMD — Multi Media Downloader (by Cataclyse)</title>
+  <meta name="description" content="Tous vos médias. Un seul endroit. Analysez et téléchargez vos contenus préférés dans la qualité que vous méritez.">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><circle cx=%2216%22 cy=%2216%22 r=%2212%22 fill=%22%23D9D0C1%22/></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css?v=20.0">
+</head>
+<body>
+  <div class="app-container">
+
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-text">
+          <span class="brand-name">MMD</span>
+          <span class="brand-by">by Cataclyse</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <select id="select-header-lang" class="header-lang-select" aria-label="Langue / Language">
+          <option value="fr">FR</option>
+          <option value="en">EN</option>
+          <option value="es">ES</option>
+        </select>
+        <div class="beacon-status" id="proxy-status-pill" title="Disponibilité du relais proxy CORS">
+          <span class="beacon-dot beacon-checking" id="proxy-status-dot"></span>
+          <span id="proxy-status-text" data-i18n="proxy.online">Proxy actif</span>
+        </div>
+        <button type="button" class="btn-icon" id="btn-open-settings" aria-label="Préférences de téléchargement" title="Paramètres">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero-block">
+      <span class="hero-label" data-i18n="hero.label">VOS MÉDIAS, À VOTRE FAÇON</span>
+      <h1 class="hero-title" data-i18n="hero.title">Tous vos médias. Un seul endroit.</h1>
+      <p class="hero-subtitle" data-i18n="hero.subtitle">Analysez et téléchargez vos contenus préférés dans la qualité que vous méritez.</p>
+    </section>
+
+    <section class="url-workstation-section" aria-label="Saisie du média">
+      <form id="url-form" class="url-card" novalidate>
+
+        <div class="url-card-row-top">
+          <div class="url-icon-wrap" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+          </div>
+          <span id="provider-badge" class="provider-badge provider-badge-idle" data-i18n="url.badge_default">Lien</span>
+          <input
+            type="url"
+            id="url-input"
+            class="url-input-field"
+            placeholder="Collez un lien multimédia pour commencer…"
+            data-i18n-placeholder="url.placeholder"
+            autocomplete="off"
+            spellcheck="false"
+            required
+            aria-label="URL du média à analyser"
+          >
+          <button type="button" id="btn-clear" class="btn-clear-inline hidden" title="Effacer" aria-label="Effacer le lien">
+            ✕
+          </button>
+        </div>
+
+        <div class="url-card-row-bottom">
+          <button type="button" id="btn-paste" class="btn-subtle-paste" title="Coller depuis le presse-papier">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span data-i18n="url.paste">Coller</span>
+          </button>
+
+          <button type="submit" id="btn-submit" class="btn-cta-analyze">
+            <span data-i18n="url.analyze">Analyser le média</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="7" y1="17" x2="17" y2="7"></line>
+              <polyline points="7 7 17 7 17 17"></polyline>
+            </svg>
+          </button>
+        </div>
+
+      </form>
+
+      <div id="status-container" class="status-panel hidden" role="status">
+        <div class="spinner-editorial" id="loading-spinner"></div>
+        <span id="status-text" class="status-message" data-i18n="status.extracting">Extraction des métadonnées du flux...</span>
+      </div>
+    </section>
+
+    <section id="inspect-section" class="inspect-deck hidden" aria-label="Options et paramètres de téléchargement">
+
+      <div class="media-overview-row">
+        <div class="media-thumb-container">
+          <img id="media-thumb" src="" alt="Aperçu du média" class="media-thumb-img">
+          <span id="media-duration" class="media-duration-badge hidden">--:--</span>
+        </div>
+        <div class="media-overview-info">
+          <div class="media-meta-tags">
+            <span class="media-tag">YouTube</span>
+            <span id="media-id-badge" class="media-tag">ID: --</span>
+          </div>
+          <h2 id="media-title" class="media-overview-title">Titre du média</h2>
+          <p id="media-author" class="media-overview-author">Chaîne émettrice</p>
+        </div>
+      </div>
+
+      <div class="format-tabs-wrap" role="tablist" aria-label="Format de sortie">
+        <button type="button" id="tab-video" class="format-tab-btn active" role="tab" aria-selected="true" data-i18n="tabs.video">
+          Vidéo et audio (MP4)
+        </button>
+        <button type="button" id="tab-audio" class="format-tab-btn" role="tab" aria-selected="false" data-i18n="tabs.audio">
+          Audio seul (MP3 / M4A)
+        </button>
+      </div>
+
+      <div id="audio-track-group" class="config-block hidden">
+        <span class="config-label" data-i18n="options.audio_track">Piste audio</span>
+        <div id="audio-track-options" class="chips-flex-wrap"></div>
+      </div>
+
+      <div class="config-block">
+        <span class="config-label" data-i18n="options.quality">Résolution et qualité de sortie</span>
+        <div id="quality-options" class="chips-flex-wrap"></div>
+      </div>
+
+      <div id="telemetry-notice" class="telemetry-notice" data-i18n="telemetry.default">
+        Format sélectionné : Conteneur MP4, résolution 1080p, codec H.264 / AAC
+      </div>
+
+      <div class="download-action-group">
+        <button type="button" id="btn-download" class="btn-download-main" data-i18n="action.download">
+          Télécharger le fichier
+        </button>
+      </div>
+
+    </section>
+
+    <section class="history-section" aria-label="Historique récent des téléchargements">
+      <div class="history-header">
+        <div class="history-title-wrap">
+          <h3 class="history-section-title" data-i18n="history.title">Téléchargements récents</h3>
+          <span id="history-count" class="history-counter">0</span>
+        </div>
+        <button type="button" id="btn-clear-history" class="btn-text-action" data-i18n="history.clear">
+          Effacer l'historique
+        </button>
+      </div>
+
+      <div id="history-list" class="history-rows-list"></div>
+
+      <div id="empty-history" class="empty-history-state">
+        <p class="empty-history-text" data-i18n="history.empty">Aucun téléchargement récent pour le moment.</p>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span class="footer-brand">MMD</span>
+        <span class="footer-dot">•</span>
+        <span class="footer-desc" data-i18n="app.tagline">Multi Media Downloader</span>
+      </div>
+      <div class="footer-right">
+        <span>by Cataclyse</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <div id="modal-settings" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-settings-title">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="modal-settings-title" class="modal-headline" data-i18n="settings.title">Préférences de téléchargement</h3>
+        <button type="button" id="btn-close-settings" class="btn-close-modal" aria-label="Fermer les paramètres">✕</button>
+      </div>
+
+      <form id="settings-form">
+        <div class="modal-body">
+          <div class="setting-field">
+            <label for="select-lang" class="setting-label" data-i18n="settings.lang_label">Langue de l'interface</label>
+            <select id="select-lang" class="setting-select">
+              <option value="fr">Français (FR)</option>
+              <option value="en">English (EN)</option>
+              <option value="es">Español (ES)</option>
+            </select>
+          </div>
+
+          <div class="setting-field">
+            <label for="select-default-quality" class="setting-label" data-i18n="settings.quality_label">Résolution vidéo par défaut</label>
+            <select id="select-default-quality" class="setting-select">
+              <option value="2160">4K UHD (2160p)</option>
+              <option value="1440">1440p QHD (2K)</option>
+              <option value="1080" selected>1080p Full HD</option>
+              <option value="720">720p HD</option>
+              <option value="480">480p Standard</option>
+              <option value="360">360p Économique</option>
+            </select>
+            <span class="setting-hint" data-i18n="settings.quality_hint">Résolution présélectionnée automatiquement lors de l'analyse.</span>
+          </div>
+
+          <div class="setting-field">
+            <label for="select-default-format" class="setting-label" data-i18n="settings.format_label">Format de sortie par défaut</label>
+            <select id="select-default-format" class="setting-select">
+              <option value="video" selected>Vidéo et audio (MP4)</option>
+              <option value="audio">Audio seul (MP3)</option>
+            </select>
+            <span class="setting-hint" data-i18n="settings.format_hint">Bascule automatiquement l'onglet actif au chargement d'un média.</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn-save-settings" data-i18n="settings.save">Enregistrer les préférences</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-stack" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js?v=26.0"></script>
+</body>
+</html>

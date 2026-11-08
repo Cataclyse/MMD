@@ -1,0 +1,12 @@
+{
+  "name": "mmd",
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "lamejs": "^1.2.1",
+    "mediabunny": "^1.65.2"
+  }
+}

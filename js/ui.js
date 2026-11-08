@@ -25,6 +25,7 @@ export class UI {
       mediaAuthor: document.getElementById('media-author'),
       mediaDuration: document.getElementById('media-duration'),
       mediaIdBadge: document.getElementById('media-id-badge'),
+      mediaProviderBadge: document.getElementById('media-provider-badge'),
 
       tabVideo: document.getElementById('tab-video'),
       tabAudio: document.getElementById('tab-audio'),
@@ -121,11 +122,15 @@ export class UI {
       mediaAuthor,
       mediaDuration,
       mediaIdBadge,
+      mediaProviderBadge,
     } = this.elements;
 
     mediaTitle.textContent = mediaData.meta.title;
     mediaAuthor.textContent = mediaData.meta.author;
     mediaIdBadge.textContent = `ID: ${mediaData.meta.id}`;
+    if (mediaProviderBadge) {
+      mediaProviderBadge.textContent = mediaData.meta.provider || 'Média';
+    }
 
     thumbImg.src = mediaData.meta.thumbnail;
     thumbImg.onerror = () => {

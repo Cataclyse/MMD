@@ -39,6 +39,21 @@ export class YouTubeExtractorEngine {
     if (this._cachedVisitorData) {
       return this._cachedVisitorData;
     }
+    const extractFromHtml = (html) => {
+      const allMatches = [];
+      const re = /(?:VISITOR_DATA|visitorData|visitor_data)["']\s*:\s*["']([^"']+)["']/g;
+      let m;
+      while ((m = re.exec(html)) !== null) {
+        allMatches.push(m[1]);
+      }
+      if (allMatches.length > 0) {
+        allMatches.sort((a, b) => b.length - a.length);
+        const val = decodeURIComponent(allMatches[0]);
+        if (val && val.length > 10) return val;
+      }
+      return '';
+    };
+
     try {
       const embedUrl = buildProxyUrl(`https://www.youtube.com/embed/${videoId}`, null, null, this._session);
       const res = await fetch(embedUrl, {
@@ -50,22 +65,33 @@ export class YouTubeExtractorEngine {
       });
       if (res.ok) {
         const text = await res.text();
-        const allMatches = [];
-        const re = /"(?:VISITOR_DATA|visitorData)":"([^"]+)"/g;
-        let m;
-        while ((m = re.exec(text)) !== null) {
-          allMatches.push(m[1]);
-        }
-        if (allMatches.length > 0) {
-          allMatches.sort((a, b) => b.length - a.length);
-          const val = decodeURIComponent(allMatches[0]);
-          if (val && val.length > 10) {
-            this._cachedVisitorData = val;
-            return val;
-          }
+        const found = extractFromHtml(text);
+        if (found) {
+          this._cachedVisitorData = found;
+          return found;
         }
       }
     } catch {}
+
+    try {
+      const watchUrl = buildProxyUrl(`https://www.youtube.com/watch?v=${videoId}`, null, null, this._session);
+      const res = await fetch(watchUrl, {
+        headers: {
+          'X-Forward-User-Agent': CHROME_UA,
+          'X-Forward-Referer': 'https://www.google.com/',
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        const text = await res.text();
+        const found = extractFromHtml(text);
+        if (found) {
+          this._cachedVisitorData = found;
+          return found;
+        }
+      }
+    } catch {}
+
     return '';
   }
 

@@ -6,6 +6,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@dividenconquer/cloudflare-proxy-fetch": "^1.1.1",
     "lamejs": "^1.2.1",
     "mediabunny": "^1.65.2"
   }

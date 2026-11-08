@@ -52,12 +52,6 @@ export const buildAndroidVrPayload = (videoId, visitorData = '') => {
   return {
     context: { client },
     videoId,
-    playbackContext: {
-      contentPlaybackContext: {
-        html5Preference: 'HTML5_PREF_WANTS',
-        signatureTimestamp: 20760,
-      },
-    },
     contentCheckOk: true,
     racyCheckOk: true,
   };
@@ -67,21 +61,14 @@ export const buildVisionOsPayload = (videoId, visitorData = '') => {
   const client = {
     clientName: 'VISIONOS',
     clientVersion: '1.02',
-    deviceMake: 'Apple',
-    deviceModel: 'RealityDevice17,1',
-    userAgent: VISIONOS_UA,
     osName: 'visionOS',
     osVersion: '26.5.23O471',
-    hl: 'fr',
-    gl: 'FR',
   };
   if (visitorData) client.visitorData = visitorData;
 
   return {
     context: { client },
     videoId,
-    contentCheckOk: true,
-    racyCheckOk: true,
   };
 };
 

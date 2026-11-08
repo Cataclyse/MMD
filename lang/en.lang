@@ -46,6 +46,5 @@
   "toast.clipboard_pasted": "Link pasted from clipboard",
   "toast.history_cleared": "History cleared",
   "toast.settings_saved": "Preferences saved successfully",
-  "platforms.title": "Supported platforms",
-  "platforms.subtitle": "Direct HD extraction • Watermark-free"
+  "platforms.label": "Supported:"
 }

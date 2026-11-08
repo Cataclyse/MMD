@@ -46,6 +46,5 @@
   "toast.clipboard_pasted": "Lien collé depuis le presse-papier",
   "toast.history_cleared": "Historique effacé",
   "toast.settings_saved": "Préférences enregistrées avec succès",
-  "platforms.title": "Plateformes compatibles",
-  "platforms.subtitle": "Extraction directe HD • Sans filigrane"
+  "platforms.label": "Compatible avec :"
 }

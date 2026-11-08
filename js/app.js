@@ -97,10 +97,10 @@ class MMDApp {
       }
     });
 
-    document.querySelectorAll('.platform-card').forEach((card) => {
-      card.addEventListener('click', () => {
+    document.querySelectorAll('.supported-mini-pill').forEach((pill) => {
+      pill.addEventListener('click', () => {
         elements.urlInput.focus();
-        const p = card.getAttribute('data-provider');
+        const p = pill.getAttribute('data-provider');
         const hints = {
           youtube: 'https://www.youtube.com/watch?v=...',
           tiktok: 'https://www.tiktok.com/@user/video/...',

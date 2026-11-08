@@ -47,8 +47,7 @@ const FALLBACK_TRANSLATIONS = {
     "toast.clipboard_pasted": "Lien collé depuis le presse-papier",
     "toast.history_cleared": "Historique effacé",
     "toast.settings_saved": "Préférences enregistrées avec succès",
-    "platforms.title": "Plateformes compatibles",
-    "platforms.subtitle": "Extraction directe HD • Sans filigrane"
+    "platforms.label": "Compatible avec :"
   },
   en: {
     "app.title": "MMD — Multi Media Downloader (by Cataclyse)",
@@ -98,8 +97,7 @@ const FALLBACK_TRANSLATIONS = {
     "toast.clipboard_pasted": "Link pasted from clipboard",
     "toast.history_cleared": "History cleared",
     "toast.settings_saved": "Preferences saved successfully",
-    "platforms.title": "Supported platforms",
-    "platforms.subtitle": "Direct HD extraction • Watermark-free"
+    "platforms.label": "Supported:"
   },
   es: {
     "app.title": "MMD — Multi Media Downloader (by Cataclyse)",
@@ -149,8 +147,7 @@ const FALLBACK_TRANSLATIONS = {
     "toast.clipboard_pasted": "Enlace pegado desde el portapapeles",
     "toast.history_cleared": "Historial borrado",
     "toast.settings_saved": "Preferencias guardadas con éxito",
-    "platforms.title": "Plataformas compatibles",
-    "platforms.subtitle": "Extracción directa HD • Sin marcas de agua"
+    "platforms.label": "Compatible con:"
   }
 };
 
